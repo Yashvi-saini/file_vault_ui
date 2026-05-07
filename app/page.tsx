@@ -10,7 +10,21 @@ import {
   FileArchive, 
   File, 
   CloudUpload,
-  X
+  X,
+  Search,
+  Plus,
+  LayoutGrid,
+  List,
+  Folder,
+  Image as ImageIcon,
+  Star,
+  Trash2,
+  Share2,
+  Clock,
+  ChevronRight,
+  MoreVertical,
+  Download,
+  Copy
 } from "lucide-react";
 
 interface FileData {
@@ -19,11 +33,12 @@ interface FileData {
   size: number;
   type: string;
   preview?: string;
+  uploadedAt: Date;
 }
 
 export default function FileVault() {
   const [files, setFiles] = useState<FileData[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = useCallback((uploadedFiles: FileList | null) => {
@@ -35,6 +50,7 @@ export default function FileVault() {
       size: file.size,
       type: file.type,
       preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined,
+      uploadedAt: new Date(),
     }));
 
     setFiles((prev) => [...newFiles, ...prev]);
@@ -58,147 +74,234 @@ export default function FileVault() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  const getFileIcon = (type: string) => {
-    const size = 28;
-    
-    if (type.includes("pdf")) {
-      return <FileText size={size} color="#e53e3e" strokeWidth={2} />;
-    }
-    if (type.includes("excel") || type.includes("sheet") || type.includes("csv")) {
-      return <FileSpreadsheet size={size} color="#2f855a" strokeWidth={2} />;
-    }
-    if (type.includes("word") || type.includes("text") || type.includes("officedocument.wordprocessingml")) {
-      return <FileText size={size} color="#2b6cb0" strokeWidth={2} />;
-    }
-    if (type.includes("audio")) {
-      return <Music size={size} color="#e53e3e" strokeWidth={2} />;
-    }
-    if (type.includes("video")) {
-      return <FileVideo size={size} color="#805ad5" strokeWidth={2} />;
-    }
-    if (type.includes("zip") || type.includes("archive") || type.includes("compressed")) {
-      return <FileArchive size={size} color="#d69e2e" strokeWidth={2} />;
-    }
-    
-    return <File size={size} color="#718096" strokeWidth={2} />;
+  const getFileIcon = (type: string, size = 24) => {
+    if (type.includes("pdf")) return <FileText size={size} color="#e53e3e" strokeWidth={1.5} />;
+    if (type.includes("excel") || type.includes("sheet") || type.includes("csv")) return <FileSpreadsheet size={size} color="#2f855a" strokeWidth={1.5} />;
+    if (type.includes("word") || type.includes("text")) return <FileText size={size} color="#2b6cb0" strokeWidth={1.5} />;
+    if (type.includes("audio")) return <Music size={size} color="#e53e3e" strokeWidth={1.5} />;
+    if (type.includes("video")) return <FileVideo size={size} color="#805ad5" strokeWidth={1.5} />;
+    if (type.includes("image")) return <ImageIcon size={size} color="#ed8936" strokeWidth={1.5} />;
+    return <File size={size} color="#718096" strokeWidth={1.5} />;
   };
 
-
+  const filteredFiles = files.filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
-    <div className="upload-card animate-fade-in">
-      {/* Left Column - Upload Section */}
-      <div className="flex flex-col">
-        <h1 className="text-2xl font-bold text-primary mb-1">Upload Files</h1>
-        <p className="text-text-muted text-sm mb-8">
-          Upload documents you want to share with your team
-        </p>
+    <div className="flex h-screen bg-background overflow-hidden font-sans">
+      {/* Sidebar */}
+      <aside className="hidden lg:flex w-64 bg-sidebar-bg border-r border-border flex-col shrink-0">
+        <div className="p-6 flex items-center gap-2">
+          <div className="w-8 h-8 bg-foreground rounded-lg flex items-center justify-center">
+            <CloudUpload size={20} color="white" />
+          </div>
+          <span className="font-bold text-lg tracking-tight">Dropinside</span>
+        </div>
 
-        <div
-          className={`drop-zone flex-1 ${isDragging ? "active" : ""}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setIsDragging(false);
-            handleFileUpload(e.dataTransfer.files);
-          }}
-        >
-          <div className="flex flex-col items-center">
-            {/* Cloud Icon */}
-            <div className="mb-6">
-              <CloudUpload size={64} color="#cbd5e0" strokeWidth={1.5} />
+        <nav className="flex-1 px-4 space-y-1">
+          <div className="flex items-center justify-between px-4 py-2 text-xs font-bold text-text-muted uppercase tracking-wider mb-2">
+            <span>Your vault</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-accent">25%</span>
+              <div className="w-8 h-1 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-full bg-accent w-1/4" />
+              </div>
             </div>
-            <p className="text-primary font-medium text-lg mb-2">
-              Drag and drop files here
-            </p>
-            <p className="text-text-muted text-sm mb-6">-OR-</p>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="btn-primary"
-            >
-              Browse Files
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              multiple
-              onChange={(e) => handleFileUpload(e.target.files)}
-            />
+          </div>
+          <div className="sidebar-item active">
+            <Folder size={18} />
+            <span>All Files</span>
+            <span className="ml-auto text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-text-muted">142</span>
+          </div>
+          <div className="sidebar-item ml-4 border-l border-border pl-4">
+            <Folder size={16} color="#ecc94b" />
+            <span>New Project</span>
+          </div>
+          <div className="sidebar-item ml-8 border-l border-border pl-4 opacity-70">
+            <Folder size={14} />
+            <span>Worksheets</span>
+          </div>
+          <div className="sidebar-item">
+            <ImageIcon size={18} />
+            <span>Foto</span>
+            <span className="ml-auto text-[10px] text-green-500 font-bold">+4</span>
+          </div>
+          <div className="sidebar-item">
+            <Share2 size={18} />
+            <span>Shared</span>
+          </div>
+          <div className="sidebar-item">
+            <Star size={18} />
+            <span>Starred</span>
+          </div>
+          <div className="sidebar-item">
+            <Trash2 size={18} />
+            <span>Deleted</span>
+          </div>
+        </nav>
+
+        <div className="p-6 border-t border-border">
+          <div className="text-[11px] text-text-muted text-center">
+            Privacy policy • Term of use
+            <div className="mt-2 text-[10px]">© 2026 Dropinside</div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Right Column - Uploaded Files Section */}
-      <div className="flex flex-col">
-        <h2 className="text-lg font-bold mb-6">Uploaded Files</h2>
-        
-        <div className="flex flex-col gap-4 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
-          {files.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 bg-gray-50 rounded-lg border border-dashed">
-              <p className="text-text-muted italic">No files uploaded yet</p>
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="h-16 bg-header-bg border-b border-border flex items-center justify-between px-4 md:px-8 shrink-0">
+          <div className="relative flex-1 max-w-xs md:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              className="w-full bg-gray-50 border-none rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-accent outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 md:gap-4">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-foreground p-2 md:px-4 md:py-2 rounded-lg text-sm font-semibold transition-colors"
+            >
+              <CloudUpload size={18} />
+              <span className="hidden sm:inline">Upload</span>
+            </button>
+            <button className="flex items-center gap-2 bg-foreground text-white p-2 md:px-4 md:py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
+              <Plus size={18} />
+              <span className="hidden sm:inline">Create</span>
+            </button>
+          </div>
+
+
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            multiple 
+            onChange={(e) => handleFileUpload(e.target.files)} 
+          />
+        </header>
+
+        {/* Content Area */}
+        <div className="flex-1 overflow-y-auto p-8 no-scrollbar">
+          {/* Recent Files Section */}
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-sm font-bold text-text-muted uppercase tracking-wider">Recent files</h2>
+              <div className="flex gap-2">
+                <LayoutGrid size={18} className="text-text-muted cursor-pointer" />
+                <List size={18} className="text-accent cursor-pointer" />
+              </div>
             </div>
-          ) : (
-            files.map((file) => (
-              <div key={file.id} className="relative group border rounded-lg p-4 bg-white shadow-sm hover:border-primary/40 transition-colors">
-                <div className="flex items-start gap-3">
-                  {/* Icon or Image Preview */}
-                  <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-gray-50 rounded overflow-hidden border border-gray-100">
+
+            <div className="card-grid">
+              {files.slice(0, 4).map(file => (
+                <div key={file.id} className="file-card group relative">
+                  <div className="mb-4">
                     {file.preview ? (
-                      <img 
-                        src={file.preview} 
-                        alt={file.name} 
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={file.preview} alt={file.name} className="w-16 h-16 object-cover rounded-lg shadow-sm" />
                     ) : (
-                      <div className="flex items-center justify-center w-full h-full">
-                        {getFileIcon(file.type)}
-                      </div>
+                      getFileIcon(file.type, 48)
                     )}
                   </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                      <p className="text-sm font-semibold truncate pr-2">
-                        {file.name}
-                      </p>
-                      <span className="text-xs text-text-muted">Completed</span>
-                    </div>
-                    
-                    {/* File Details: Size and Type */}
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider bg-gray-100 px-1.5 py-0.5 rounded">
-                        {file.type.split("/")[1] || "file"}
-                      </span>
-                      <span className="text-[11px] text-text-muted">
-                        {formatFileSize(file.size)}
-                      </span>
-                    </div>
-
-                    {/* Progress Bar */}
-                    <div className="progress-bar">
-                      <div className="progress-fill w-full" />
-                    </div>
-                  </div>
-                  
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => deleteFile(file.id)}
-                    className="ml-2 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                  <span className="text-sm font-semibold truncate w-full">{file.name}</span>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }}
+                    className="absolute top-2 right-2 p-1 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <X size={18} />
+                    <X size={14} />
                   </button>
                 </div>
+              ))}
+              {/* Mock Folders */}
+              <div className="file-card">
+                <Folder size={48} color="#ecc94b" fill="#ecc94b" fillOpacity={0.2} className="mb-4" />
+                <span className="text-sm font-semibold">Worksheets</span>
               </div>
-            ))
-          )}
+              <div className="file-card">
+                <Folder size={48} color="#ecc94b" fill="#ecc94b" fillOpacity={0.2} className="mb-4" />
+                <span className="text-sm font-semibold">Project details</span>
+              </div>
+            </div>
+          </section>
+
+          {/* All Files Table */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-bold">All files</span>
+                <ChevronRight size={14} className="text-text-muted" />
+                <span className="text-text-muted">New Project</span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-border overflow-hidden">
+              <div className="table-row table-header bg-gray-50/50">
+                <div>Name</div>
+                <div>Type</div>
+                <div>Size</div>
+                <div>Date of change</div>
+                <div></div>
+              </div>
+              
+              {filteredFiles.length === 0 ? (
+                <div className="p-12 text-center text-text-muted italic">
+                  No files uploaded in this folder.
+                </div>
+              ) : (
+                filteredFiles.map(file => (
+                  <div key={file.id} className="table-row group">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="shrink-0">{getFileIcon(file.type, 20)}</div>
+                      <span className="truncate font-medium">{file.name}</span>
+                    </div>
+                    <div className="text-text-muted">{file.type.split("/")[1]?.toUpperCase() || "FILE"}</div>
+                    <div className="text-text-muted">{formatFileSize(file.size)}</div>
+                    <div className="text-text-muted">{file.uploadedAt.toLocaleDateString()}</div>
+                    <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => deleteFile(file.id)}
+                        className="p-1 hover:text-red-500"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
         </div>
-      </div>
+
+        {/* Bottom Bar (Conditional) */}
+        {files.length > 0 && (
+          <div className="h-14 bg-white border-t border-border flex items-center justify-between px-8 shrink-0">
+            <div className="flex items-center gap-3 text-sm">
+              <Folder size={18} color="#ecc94b" fill="#ecc94b" fillOpacity={0.2} />
+              <span className="font-semibold">New Project</span>
+              <span className="text-text-muted">•</span>
+              <span className="text-text-muted">{files.length} items</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="flex items-center gap-2 text-text-muted hover:text-foreground">
+                <Download size={16} />
+                <span className="text-xs font-bold uppercase tracking-wider">Download</span>
+              </button>
+              <button className="flex items-center gap-2 text-text-muted hover:text-foreground">
+                <Copy size={16} />
+                <span className="text-xs font-bold uppercase tracking-wider">Copy link</span>
+              </button>
+              <button className="p-2 hover:bg-gray-100 rounded-lg">
+                <MoreVertical size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
-
 }

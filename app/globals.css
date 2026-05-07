@@ -1,20 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #e0f7f1;
-  --foreground: #2d3748;
-  --primary: #4fa08c;
-  --primary-hover: #3d8b7a;
+  --background: #f9fafb;
+  --foreground: #111827;
+  --sidebar-bg: #ffffff;
+  --header-bg: #ffffff;
   --card-bg: #ffffff;
-  --text-muted: #718096;
-  --border-color: #cbd5e0;
+  --primary: #111827;
+  --accent: #3b82f6;
+  --border: #e5e7eb;
+  --text-muted: #6b7280;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
-  --color-primary-hover: var(--primary-hover);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
   --color-text-muted: var(--text-muted);
 }
 
@@ -22,75 +25,80 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: "Inter", sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
   margin: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
-.upload-card {
-  background: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  max-width: 900px;
-  padding: 40px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-}
-
-@media (max-width: 768px) {
-  .upload-card {
-    grid-template-columns: 1fr;
-    padding: 20px;
-  }
-}
-
-.drop-zone {
-  border: 2px dashed #cbd5e0;
-  border-radius: 8px;
-  padding: 40px 20px;
+.sidebar-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.drop-zone.active {
-  border-color: var(--primary);
-  background-color: rgba(79, 160, 140, 0.05);
-}
-
-.btn-primary {
-  background-color: var(--primary);
-  color: white;
-  padding: 10px 24px;
-  border-radius: 4px;
-  font-weight: 600;
-  transition: background-color 0.2s;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
   cursor: pointer;
 }
 
-.btn-primary:hover {
-  background-color: var(--primary-hover);
+.sidebar-item:hover, .sidebar-item.active {
+  background-color: #f3f4f6;
+  color: var(--foreground);
 }
 
-.progress-bar {
-  height: 4px;
-  background-color: #edf2f7;
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: 8px;
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
 }
 
-.progress-fill {
-  height: 100%;
-  background-color: var(--primary);
-  transition: width 0.3s ease;
+.file-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.file-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.table-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) 100px 100px 150px 40px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  transition: background-color 0.1s;
+}
+
+@media (max-width: 1024px) {
+  .table-row {
+    grid-template-columns: minmax(150px, 1fr) 0 0 100px 40px;
+  }
+  .table-row > div:nth-child(2),
+  .table-row > div:nth-child(3) {
+    display: none;
+  }
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -98,9 +106,11 @@ body {
 }
 
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+
+
 
 
 
